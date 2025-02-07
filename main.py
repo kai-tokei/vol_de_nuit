@@ -14,7 +14,7 @@ class App:
         distance = 10
 
         self.camera = Camera(
-            pos=np.array([5 * 25, -10, 5 * 25]),
+            pos=np.array([5 * 25, -2.5, 5 * 25]),
             h_angle=h_angle,
             v_angle=v_angle,
             z_angle=z_angle,
