@@ -18,10 +18,6 @@ class Plane:
         self.yaw_speed = 0.008  # 旋回速度（1回の操作での最大角度変化）
         self.pitch_speed = 0.3  # 旋回速度（1回の操作での最大角度変化）
 
-    def cal_direction(self) -> np.array:
-        """機体が進む方向を計算"""
-        pass
-
     def yaw_right(self):
         """右旋回"""
         self.yaw_a = self.yaw_speed
@@ -40,31 +36,31 @@ class Plane:
         """下降"""
         self.pitch += self.pitch_speed
 
+    def _attenution(self):
+        """減衰処理"""
+        self.yaw_v *= 0.99
+        self.pitch *= 0.99
+        self.v_inertial *= 0.99
+
     def update(self):
         """操作処理"""
 
-        # 角速度を更新
-        self.yaw_v += self.yaw_a
+        self._attenution()
 
-        # 最大角速度制限
-        self.yaw_v = np.clip(self.yaw_v, -self.max_yaw_v, self.max_yaw_v)
+        self.yaw_v += self.yaw_a  # 角速度を更新
+        self.yaw_v = np.clip(
+            self.yaw_v, -self.max_yaw_v, self.max_yaw_v
+        )  # 最大角速度制限
 
-        # yaw角を更新（角速度で積分）
+        # yaw角を更新
         self.yaw += self.yaw_v
-
-        # 減衰（角速度が0に近づくように）
-        self.yaw_v *= 0.99
-
-        # 360度でループ
         self.yaw = self.yaw % 360
-
-        # pitchが時間とともに減衰
-        self.pitch *= 0.99
 
         # 機体の向きに基づいて速度を決定
         yaw_rad = np.radians(self.yaw)
         pitch_rad = np.radians(self.pitch)
 
+        # 方向を計算して正規化
         direction = np.array(
             [
                 np.sin(yaw_rad),  # 左右の旋回
@@ -72,21 +68,14 @@ class Plane:
                 np.cos(yaw_rad) * np.cos(pitch_rad),  # 前方への進行
             ]
         )
-
-        # 正規化
         direction = direction / np.linalg.norm(direction)
 
         # 速度の計算
         self.a_inertial = self.a * direction
         self.v_inertial += self.a_inertial
 
-        # 速度を自然減衰させる
-        self.v_inertial *= 0.98
-
         # 座標移動
         self.pos += self.v_inertial
-
-        self.pos += self.v_inertial  # 位置を更新
 
         self.yaw_a = 0.0  # 入力がない場合は角加速度を0に
 
