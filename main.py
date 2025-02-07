@@ -12,21 +12,38 @@ class Plane:
         self.a = 0.01
         self.pitch = 0.0  # 上下の角度
         self.yaw = 0.0  # 左右の角度
-        self.turn_speed = 0.3  # 旋回速度（1回の操作での最大角度変化）
+        self.yaw_a = 0.0  # yaw方向の角加速度
+        self.yaw_v = 0.0  # yaw方向の角速度
+        self.max_yaw_v = 0.5  # 最大角速度
+        self.yaw_speed = 0.008  # 旋回速度（1回の操作での最大角度変化）
+        self.pitch_speed = 0.3  # 旋回速度（1回の操作での最大角度変化）
 
     def update(self):
         """操作処理"""
         # 機体の向きを操作
         if pyxel.btn(pyxel.KEY_A):
-            self.yaw -= self.turn_speed
-        if pyxel.btn(pyxel.KEY_D):
-            self.yaw += self.turn_speed
+            self.yaw_a = -self.yaw_speed  # 左旋回
+        elif pyxel.btn(pyxel.KEY_D):
+            self.yaw_a = self.yaw_speed  # 右旋回
+        else:
+            self.yaw_a = 0.0  # 入力がない場合は角加速度を0に
         if pyxel.btn(pyxel.KEY_W):
-            self.pitch += self.turn_speed
+            self.pitch += self.pitch_speed
         if pyxel.btn(pyxel.KEY_S):
-            self.pitch -= self.turn_speed
+            self.pitch -= self.pitch_speed
 
-        self.yaw = self.yaw % 360
+        # 角速度を更新
+        self.yaw_v += self.yaw_a
+        # 最大角速度制限
+        self.yaw_v = np.clip(self.yaw_v, -self.max_yaw_v, self.max_yaw_v)
+
+        # yaw角を更新（角速度で積分）
+        self.yaw += self.yaw_v
+
+        # 減衰（角速度が0に近づくように）
+        self.yaw_v *= 0.99
+
+        self.yaw = self.yaw % 360  # 360度でループ
         # 旋回が時間とともに減衰
         self.pitch *= 0.99
 
@@ -91,9 +108,9 @@ class App:
 
         # 角度調整
         v = 360
-        if pyxel.btn(pyxel.KEY_LEFT):
+        if pyxel.btn(pyxel.KEY_A):
             self.camera.rotate(-np.pi / v, 0, 0)
-        if pyxel.btn(pyxel.KEY_RIGHT):
+        if pyxel.btn(pyxel.KEY_D):
             self.camera.rotate(np.pi / v, 0, 0)
         if pyxel.btn(pyxel.KEY_UP):
             self.camera.rotate(0, -np.pi / v, 0)
@@ -104,27 +121,30 @@ class App:
         """
         デバッグ情報を出力
         """
-        # pyxel.text(0, 0, "camera_pos: " + str(self.camera.camera_pos), 7)
-        # pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
-        # pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
-        # pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
-        # pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
-        # pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)
+        pyxel.text(0, 0, "camera_pos: " + str(self.camera.camera_pos), 7)
+        pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
+        pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
+        pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
+        pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
+        pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)
 
     def draw(self):
         pyxel.cls(0)
         d = 50
         for z in range(50):
             for x in range(50):
-                pos = self.camera.cal_pos_on_screen(np.array([x * 30, 0, z * 30]))
+                pos = self.camera.cal_pos_on_screen(np.array([x * 50, 0, z * 50]))
                 if pos != None:
                     px, py, pd = pos
-                    if pd > 300:
+                    if pd > 400:
+                        pyxel.pset(px, py, (8 if ((x + z) % d == 0) else 1))
+                    elif pd > 250:
                         pyxel.pset(px, py, (8 if ((x + z) % d == 0) else 13))
                     else:
                         pyxel.pset(px, py, (8 if ((x + z) % d == 0) else 7))
+
         self.plane.draw(self.camera)
-        self.draw_debug()
+        # self.draw_debug()
 
 
 App()
