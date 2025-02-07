@@ -3,22 +3,54 @@ import numpy as np
 from src.camera import Camera
 
 
+class Plane(Camera):
+    def __init__(self, pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h):
+        super().__init__(pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h)
+        """
+        gravity: 重力加速度(m/s^2)
+        weight: 重量(kg)
+        thrust: 推力(N)
+        acceleration: 加速度ベクトル(m/s^2)
+        velocity: 速度ベクトル(m/s)
+        direction: 機体の単位方向ベクトル
+        r_wing: 右舷の動翼の単位方向ベクトル
+        l_wing: 左舷の動翼の単位方向ベクトル
+        re_wing: 尾翼の単位方向ベクトル
+        v_stab: 垂直尾翼の単位方向ベクトル
+        angular: 回転モーメントベクトル
+        """
+        self.gravity = 9.8
+        self.weight: int = 3000
+        self.thrust: np.array
+        self.acceleration: np.array
+        self.velocity: np.array
+        self.direction: np.array
+        self.r_wing: np.array
+        self.l_wing: np.array
+        self.re_wing: np.array
+        self.v_stab: np.array
+        self.angular: np.array
+
+    """
+    モーメントの計算処理
+    M = F x L
+    """
+
+    def update(self):
+        pass
+
+
 class App:
     def __init__(self):
         pyxel.init(160, 120, fps=60)
         pyxel.mouse(visible=True)
 
-        h_angle = 0
-        v_angle = 0
-        z_angle = 0
-        distance = 10
-
-        self.camera = Camera(
+        self.camera = Plane(
             pos=np.array([5 * 25, -2.5, 5 * 25]),
-            h_angle=h_angle,
-            v_angle=v_angle,
-            z_angle=z_angle,
-            screen_d=distance,
+            h_angle=0,
+            v_angle=0,
+            z_angle=0,
+            screen_d=10,
             screen_w=160,
             screen_h=120,
         )
@@ -55,17 +87,6 @@ class App:
             self.camera.rotate(0, np.pi / v, 0)
         if pyxel.btn(pyxel.KEY_DOWN):
             self.camera.rotate(0, -np.pi / v, 0)
-
-        # 奥行スケールを調整
-        if pyxel.btn(pyxel.KEY_Z):
-            self.camera.z_prime_handler += 0.01
-        if pyxel.btn(pyxel.KEY_X):
-            self.camera.z_prime_handler -= 0.01
-
-        if pyxel.btn(pyxel.KEY_H):
-            self.camera.rotate(0, 0, np.pi / v)
-        if pyxel.btn(pyxel.KEY_G):
-            self.camera.rotate(0, 0, -np.pi / v)
 
     def draw_debug(self):
         """
