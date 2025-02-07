@@ -14,13 +14,13 @@ class Plane:
         """
         飛行機の基本状態を定義
         """
-        self.pos = np.array([0.0, 0.0, 1000.0])  # 初期座標 (高度1000m)
-        self.gravity = np.array([0, 0, -9.8])  # 重力加速度 (m/s^2)
+        self.pos = np.array([0.0, 1000.0, 0.0])  # 初期座標 (高度1000m)
+        self.gravity = np.array([0, -9.8, 0])  # 重力加速度 (m/s^2)
         self.weight = 3000  # 機体の重量 (kg)
         self.thrust = np.array([0.0, 0.0, 0.0])  # 推力 (N)
         self.acceleration = np.array([0.0, 0.0, 0.0])  # 加速度 (m/s^2)
-        self.velocity = np.array([50.0, 0.0, 0.0])  # 初期速度 (m/s)
-        self.direction = np.array([1.0, 0.0, 0.0])  # 初期進行方向
+        self.velocity = np.array([0.0, 0.0, 0.0])  # 初期速度 (m/s)
+        self.direction = np.array([0.0, 0.0, 0.0])  # 初期進行方向
 
         # 操縦桿の情報
         self.roll: float = 0  # 操縦桿の横割合
@@ -28,12 +28,12 @@ class Plane:
         self.pedal: float = 0  # ラダーペダルの割合
 
         # 動翼の初期方向 (単位ベクトル)
-        self.r_aileron = np.array([1.0, 0.0, 0.0])  # 右舷エルロン
-        self.l_aileron = np.array([-1.0, 0.0, 0.0])  # 左舷エルロン
-        self.re_aileron = np.array([0.0, 0.0, -1.0])  # 尾翼エレベーター
-        self.v_stab = np.array([0.0, 1.0, 0.0])  # 垂直尾翼
+        self.r_aileron = np.array([0.0, 0.0, 1.0])  # 右舷エルロン
+        self.l_aileron = np.array([0.0, 0.0, 1.0])  # 左舷エルロン
+        self.re_aileron = np.array([0.0, 0.0, 1.0])  # 尾翼エレベーター
+        self.v_stab = np.array([0.0, 0.0, 1.0])  # 垂直尾翼
 
-        self.angular = np.array([0.0, 0.0, 0.0])  # 角速度 (rad/s)
+        self.angular = np.array([0.0, 0.0, 1.0])  # 角速度 (rad/s)
 
     def controll_roll(self, d: float):
         """
@@ -42,6 +42,20 @@ class Plane:
         self.roll += d
         if abs(self.roll) > 1.0:
             self.roll = 1.0 * np.sign(self.roll)
+        self.r_aileron = np.array(
+            [
+                0,
+                np.cos(self.roll * self.R_AILERON_LIMIT),
+                np.sin(self.roll * self.R_AILERON_LIMIT),
+            ]
+        )
+        self.l_aileron = np.array(
+            [
+                0,
+                np.cos(-self.roll * self.R_AILERON_LIMIT),
+                np.sin(-self.roll * self.R_AILERON_LIMIT),
+            ]
+        )
 
     def controll_elevation(self, d: float):
         """
