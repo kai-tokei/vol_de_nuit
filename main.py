@@ -3,47 +3,53 @@ import numpy as np
 from src.camera import Camera
 
 
-class Plane(Camera):
-    R_WING_LIMIT: float = np.pi / 6
-    L_WING_LIMIT: float = np.pi / 6
-    RE_WING_LIMIT: float = np.pi / 6
-    V_STAB_LIMIT: float = np.pi / 6
-    ACCELERATION_LIMIT: float = 100
+class Plane:
+    R_AILERON_LIMIT: float = np.pi / 6  # 右舷エルロンの最大角度
+    L_AILERON_LIMIT: float = np.pi / 6  # 左舷エルロンの最大角度
+    RE_AILERON_LIMIT: float = np.pi / 6  # 尾翼エレベーターの最大角度
+    V_STAB_LIMIT: float = np.pi / 6  # 垂直尾翼の最大角度
+    ACCELERATION_LIMIT: float = 100  # 加速度の最大値
 
-    def __init__(self, pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h):
-        super().__init__(pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h)
+    def __init__(self):
         """
-        gravity: 重力加速度(m/s^2)
-        weight: 重量(kg)
-        thrust: 推力(N)
-        acceleration: 加速度ベクトル(m/s^2)
-        velocity: 速度ベクトル(m/s)
-        direction: 機体の単位方向ベクトル
-        r_wing: 右舷の動翼の単位方向ベクトル
-        l_wing: 左舷の動翼の単位方向ベクトル
-        re_wing: 尾翼の単位方向ベクトル
-        v_stab: 垂直尾翼の単位方向ベクトル
-        angular: 回転モーメントベクトル
+        飛行機の基本状態を定義
         """
-        self.gravity = 9.8
-        self.weight: int = 3000
-        self.thrust: np.array
-        self.acceleration: np.array
-        self.velocity: np.array
-        self.direction: np.array
-        self.r_wing: np.array
-        self.l_wing: np.array
-        self.re_wing: np.array
-        self.v_stab: np.array
-        self.angular: np.array
+        self.pos = np.array([0.0, 0.0, 1000.0])  # 初期座標 (高度1000m)
+        self.gravity = np.array([0, 0, -9.8])  # 重力加速度 (m/s^2)
+        self.weight = 3000  # 機体の重量 (kg)
+        self.thrust = np.array([0.0, 0.0, 0.0])  # 推力 (N)
+        self.acceleration = np.array([0.0, 0.0, 0.0])  # 加速度 (m/s^2)
+        self.velocity = np.array([50.0, 0.0, 0.0])  # 初期速度 (m/s)
+        self.direction = np.array([1.0, 0.0, 0.0])  # 初期進行方向
 
-    """
-    モーメントの計算処理
-    M = F x L
-    """
+        # 操縦桿の情報
+        self.roll: float = 0  # 操縦桿の横割合
+        self.elevation: float = 0  # 操縦桿の縦割合
+        self.pedal: float = 0  # ラダーペダルの割合
 
-    def update(self):
-        pass
+        # 動翼の初期方向 (単位ベクトル)
+        self.r_aileron = np.array([1.0, 0.0, 0.0])  # 右舷エルロン
+        self.l_aileron = np.array([-1.0, 0.0, 0.0])  # 左舷エルロン
+        self.re_aileron = np.array([0.0, 0.0, -1.0])  # 尾翼エレベーター
+        self.v_stab = np.array([0.0, 1.0, 0.0])  # 垂直尾翼
+
+        self.angular = np.array([0.0, 0.0, 0.0])  # 角速度 (rad/s)
+
+    def controll_roll(self, d: float):
+        """
+        操縦桿の割合を制御
+        """
+        self.roll += d
+        if abs(self.roll) > 1.0:
+            self.roll = 1.0 * np.sign(self.roll)
+
+    def controll_elevation(self, d: float):
+        """
+        操縦桿の縦割合を制御
+        """
+        self.elevation += d
+        if abs(self.elevation) > 1.0:
+            self.elevation = 1.0 * np.sign(self.elevation)
 
 
 class App:
