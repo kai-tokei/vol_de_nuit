@@ -18,22 +18,34 @@ class Plane:
         self.yaw_speed = 0.008  # 旋回速度（1回の操作での最大角度変化）
         self.pitch_speed = 0.3  # 旋回速度（1回の操作での最大角度変化）
 
+    def cal_direction(self) -> np.array:
+        """機体が進む方向を計算"""
+        pass
+
+    def yaw_right(self):
+        """右旋回"""
+        self.yaw_a = self.yaw_speed
+        self.yaw_v += self.yaw_a
+
+    def yaw_left(self):
+        """左旋回"""
+        self.yaw_a = -self.yaw_speed
+        self.yaw_v += self.yaw_a
+
+    def pitch_up(self):
+        """上昇"""
+        self.pitch -= self.pitch_speed
+
+    def pitch_down(self):
+        """下降"""
+        self.pitch += self.pitch_speed
+
     def update(self):
         """操作処理"""
-        # 機体の向きを操作
-        if pyxel.btn(pyxel.KEY_A):
-            self.yaw_a = -self.yaw_speed  # 左旋回
-        elif pyxel.btn(pyxel.KEY_D):
-            self.yaw_a = self.yaw_speed  # 右旋回
-        else:
-            self.yaw_a = 0.0  # 入力がない場合は角加速度を0に
-        if pyxel.btn(pyxel.KEY_W):
-            self.pitch += self.pitch_speed
-        if pyxel.btn(pyxel.KEY_S):
-            self.pitch -= self.pitch_speed
 
         # 角速度を更新
         self.yaw_v += self.yaw_a
+
         # 最大角速度制限
         self.yaw_v = np.clip(self.yaw_v, -self.max_yaw_v, self.max_yaw_v)
 
@@ -43,8 +55,10 @@ class Plane:
         # 減衰（角速度が0に近づくように）
         self.yaw_v *= 0.99
 
-        self.yaw = self.yaw % 360  # 360度でループ
-        # 旋回が時間とともに減衰
+        # 360度でループ
+        self.yaw = self.yaw % 360
+
+        # pitchが時間とともに減衰
         self.pitch *= 0.99
 
         # 機体の向きに基づいて速度を決定
@@ -59,24 +73,29 @@ class Plane:
             ]
         )
 
-        direction = direction / np.linalg.norm(direction)  # 正規化
+        # 正規化
+        direction = direction / np.linalg.norm(direction)
 
+        # 速度の計算
         self.a_inertial = self.a * direction
         self.v_inertial += self.a_inertial
-        self.v_inertial *= 0.98  # 減衰
-        self.pos += self.v_inertial
 
-        # 徐々に前進方向へ戻る
-        # velocity = self.velocity * 0.95 + self.default_velocity * 0.05
-        # velocity = self.velocity / np.linalg.norm(self.velocity)  # 正規化
+        # 速度を自然減衰させる
+        self.v_inertial *= 0.98
+
+        # 座標移動
+        self.pos += self.v_inertial
 
         self.pos += self.v_inertial  # 位置を更新
 
-    def draw(self, camera: Camera):
-        s_pos = camera.cal_pos_on_screen(self.pos)
-        d_pos = camera.cal_pos_on_screen(self.pos + self.v_inertial * 3)
+        self.yaw_a = 0.0  # 入力がない場合は角加速度を0に
 
-        if s_pos is not None and d_pos is not None:
-            sx, sy, _ = s_pos
-            dx, dy, _ = d_pos
-            pyxel.line(sx, sy, dx, dy, 5)
+    def draw(self, camera: Camera):
+        pass
+        # s_pos = camera.cal_pos_on_screen(self.pos)
+        # d_pos = camera.cal_pos_on_screen(self.pos + self.v_inertial * 3)
+
+        # if s_pos is not None and d_pos is not None:
+        #     sx, sy, _ = s_pos
+        #     dx, dy, _ = d_pos
+        #     pyxel.line(sx, sy, dx, dy, 5)

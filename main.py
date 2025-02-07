@@ -1,7 +1,9 @@
 import pyxel
 import numpy as np
+
 from src.camera import Camera
 from src.plane import Plane
+from src.kyes import InputDetector as Input
 
 
 class App:
@@ -24,9 +26,20 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        self.plane.update()
         self.camera.set_pos(self.plane.pos[0], self.plane.pos[1], self.plane.pos[2])
         self.camera.set_angle(np.radians(self.plane.yaw), np.radians(self.plane.pitch))
+
+        # 機体の向きを操作
+        if Input.btn(Input.LEFT):
+            self.plane.yaw_left()
+        if Input.btn(Input.RIGHT):
+            self.plane.yaw_right()
+        if Input.btn(Input.UP):
+            self.plane.pitch_down()
+        if Input.btn(Input.DOWN):
+            self.plane.pitch_up()
+
+        self.plane.update()
 
     def draw_debug(self):
         """
