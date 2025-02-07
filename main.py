@@ -9,7 +9,6 @@ from src.kyes import InputDetector as Input
 class App:
     def __init__(self):
         pyxel.init(160, 120, fps=60)
-        pyxel.mouse(visible=True)
 
         self.plane = Plane()
         self.camera = Camera(
