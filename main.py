@@ -4,6 +4,12 @@ from src.camera import Camera
 
 
 class Plane(Camera):
+    R_WING_LIMIT: float = np.pi / 6
+    L_WING_LIMIT: float = np.pi / 6
+    RE_WING_LIMIT: float = np.pi / 6
+    V_STAB_LIMIT: float = np.pi / 6
+    ACCELERATION_LIMIT: float = 100
+
     def __init__(self, pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h):
         super().__init__(pos, h_angle, v_angle, z_angle, screen_d, screen_w, screen_h)
         """
