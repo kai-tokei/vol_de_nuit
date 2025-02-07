@@ -21,7 +21,7 @@ class Camera:
         self.screen_w: int = screen_w
         self.screen_h: int = screen_h
         self.z_prime_handler: int = 4
-        self.draw_limit: int = 60
+        self.draw_limit: int = 500
         self.rotate(0, 0, 0)
 
     def cal_pos_on_screen(self, pos: np.array) -> tuple[int, int, int] | None:
@@ -78,6 +78,10 @@ class Camera:
     def move(self, dx: float, dy: float, dz: float):
         """カメラの位置を変更する"""
         self.camera_pos += np.array([dx, dy, dz])
+
+    def set(self, x: float, y: float, z: float):
+        """カメラの位置を設定する"""
+        self.camera_pos = np.array([x, y, z])
 
     def rotate(self, dh: float, dv: float, dz: float):
         """カメラの向きを変更する"""

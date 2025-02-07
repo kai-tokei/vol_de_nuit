@@ -14,8 +14,8 @@ class Plane:
         """
         飛行機の基本状態を定義
         """
-        self.pos = np.array([0.0, 1000.0, 0.0])  # 初期座標 (高度1000m)
-        self.gravity = np.array([0, -9.8, 0])  # 重力加速度 (m/s^2)
+        self.pos = np.array([100.0, -100.0, 100.0])  # 初期座標 (高度1000m)
+        self.gravity = np.array([0, 0.00098, 0])  # 重力加速度 (m/s^2)
         self.weight = 3000  # 機体の重量 (kg)
         self.thrust = np.array([0.0, 0.0, 0.0])  # 推力 (N)
         self.acceleration = np.array([0.0, 0.0, 0.0])  # 加速度 (m/s^2)
@@ -36,34 +36,48 @@ class Plane:
         self.angular = np.array([0.0, 0.0, 1.0])  # 角速度 (rad/s)
 
     def controll_roll(self, d: float):
-        """
-        操縦桿の割合を制御
-        """
+        """操縦桿の横割合を制御"""
         self.roll += d
-        if abs(self.roll) > 1.0:
-            self.roll = 1.0 * np.sign(self.roll)
-        self.r_aileron = np.array(
-            [
-                0,
-                np.cos(self.roll * self.R_AILERON_LIMIT),
-                np.sin(self.roll * self.R_AILERON_LIMIT),
-            ]
-        )
-        self.l_aileron = np.array(
-            [
-                0,
-                np.cos(-self.roll * self.R_AILERON_LIMIT),
-                np.sin(-self.roll * self.R_AILERON_LIMIT),
-            ]
-        )
+        self.roll = np.clip(self.roll, -1.0, 1.0)
 
     def controll_elevation(self, d: float):
-        """
-        操縦桿の縦割合を制御
-        """
+        """操縦桿の縦割合を制御"""
         self.elevation += d
-        if abs(self.elevation) > 1.0:
-            self.elevation = 1.0 * np.sign(self.elevation)
+        self.elevation = np.clip(self.elevation, -1.0, 1.0)
+
+    def update_wing_position(self):
+        """
+        操縦桿の入力に応じて動翼の向きを変更
+        - エルロン (roll) → 機体のロールに影響
+        - エレベーター (elevation) → 機体のピッチに影響
+        """
+        # 右エルロンは上がる、左エルロンは下がる（右ロール）
+        r_angle = self.R_AILERON_LIMIT * self.roll
+        l_angle = -self.L_AILERON_LIMIT * self.roll
+
+        # 尾翼エレベーターはピッチ制御
+        re_angle = self.RE_AILERON_LIMIT * self.elevation
+
+        # 回転行列を適用
+        cos_r, sin_r = np.cos(r_angle), np.sin(r_angle)
+        cos_l, sin_l = np.cos(l_angle), np.sin(l_angle)
+        cos_re, sin_re = np.cos(re_angle), np.sin(re_angle)
+
+        # 動翼の回転
+        self.r_aileron = np.array([0.0, sin_r, cos_r])
+        self.l_aileron = np.array([0.0, sin_l, cos_l])
+        self.re_aileron = np.array([0.0, sin_re, cos_re])
+
+    def update(self):
+        """飛行機の状態を更新"""
+        self.update_wing_position()  # 操縦桿に応じて動翼を更新
+
+        # 仮の飛行制御（後で修正）
+        self.velocity += self.acceleration
+        self.pos += self.velocity
+
+        # 重力の適用（簡易）
+        self.acceleration = self.gravity
 
 
 class App:
@@ -71,7 +85,8 @@ class App:
         pyxel.init(160, 120, fps=60)
         pyxel.mouse(visible=True)
 
-        self.camera = Plane(
+        self.plane = Plane()
+        self.camera = Camera(
             pos=np.array([5 * 25, -2.5, 5 * 25]),
             h_angle=0,
             v_angle=0,
@@ -85,23 +100,27 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        self.plane.update()
+        self.camera.set(
+            self.plane.pos[0], self.plane.pos[1] - 10, self.plane.pos[2] - 10
+        )
         # 移動
-        if pyxel.btn(pyxel.KEY_W):
-            self.camera.move(
-                self.move_velo * np.sin(self.camera.camera_h_angle),
-                0,
-                self.move_velo * np.cos(self.camera.camera_h_angle),
-            )
-        if pyxel.btn(pyxel.KEY_S):
-            self.camera.move(
-                -self.move_velo * np.sin(self.camera.camera_h_angle),
-                0,
-                -self.move_velo * np.cos(self.camera.camera_h_angle),
-            )
-        if pyxel.btn(pyxel.KEY_K):
-            self.camera.move(0, -self.move_velo, 0)
-        if pyxel.btn(pyxel.KEY_J):
-            self.camera.move(0, self.move_velo, 0)
+        # if pyxel.btn(pyxel.KEY_W):
+        #     self.camera.move(
+        #         self.move_velo * np.sin(self.camera.camera_h_angle),
+        #         0,
+        #         self.move_velo * np.cos(self.camera.camera_h_angle),
+        #     )
+        # if pyxel.btn(pyxel.KEY_S):
+        #     self.camera.move(
+        #         -self.move_velo * np.sin(self.camera.camera_h_angle),
+        #         0,
+        #         -self.move_velo * np.cos(self.camera.camera_h_angle),
+        #     )
+        # if pyxel.btn(pyxel.KEY_K):
+        #     self.camera.move(0, -self.move_velo, 0)
+        # if pyxel.btn(pyxel.KEY_J):
+        #     self.camera.move(0, self.move_velo, 0)
 
         # 角度調整
         v = 360
@@ -110,9 +129,9 @@ class App:
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.camera.rotate(np.pi / v, 0, 0)
         if pyxel.btn(pyxel.KEY_UP):
-            self.camera.rotate(0, np.pi / v, 0)
-        if pyxel.btn(pyxel.KEY_DOWN):
             self.camera.rotate(0, -np.pi / v, 0)
+        if pyxel.btn(pyxel.KEY_DOWN):
+            self.camera.rotate(0, np.pi / v, 0)
 
     def draw_debug(self):
         """
@@ -125,13 +144,19 @@ class App:
 
     def draw(self):
         pyxel.cls(0)
-        d = 20
+        d = 50
         for z in range(50):
             for x in range(50):
-                pos = self.camera.cal_pos_on_screen(np.array([x * 5, 0, z * 5]))
+                pos = self.camera.cal_pos_on_screen(np.array([x * 20, 0, z * 20]))
                 if pos != None:
                     px, py, pd = pos
                     pyxel.pset(px, py, (8 if ((x + z) % d == 0) else 7))
+        pos = self.camera.cal_pos_on_screen(
+            np.array([self.plane.pos[0], self.plane.pos[1], self.plane.pos[2]])
+        )
+        if pos != None:
+            px, py, pd = pos
+            pyxel.elli(px, py, 5, 5, 8)
         self.draw_debug()
 
 
