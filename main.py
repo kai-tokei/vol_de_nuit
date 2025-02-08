@@ -34,17 +34,21 @@ class App:
 
         # 機体の向きを操作
         if Input.btn(Input.LEFT):
-            self.plane.yaw_left()
+            self.plane.roll_left()
         if Input.btn(Input.RIGHT):
-            self.plane.yaw_right()
+            self.plane.roll_right()
         if Input.btn(Input.UP):
             self.plane.pitch_down()
         if Input.btn(Input.DOWN):
             self.plane.pitch_up()
-        if Input.btn(Input.X):
-            self.plane.speed_up()
-        if Input.btn(Input.B):
-            self.plane.speed_down()
+        if Input.btn(Input.Y):
+            self.plane.yaw_left()
+        if Input.btn(Input.A):
+            self.plane.yaw_right()
+        # if Input.btn(Input.X):
+        #     self.plane.speed_up()
+        # if Input.btn(Input.B):
+        #     self.plane.speed_down()
 
         self.plane.update()
 

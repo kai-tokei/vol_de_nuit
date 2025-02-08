@@ -23,7 +23,7 @@ class InputDetector:
     ]
 
     A = [
-        pyxel.KEY_A,
+        pyxel.KEY_S,
         pyxel.GAMEPAD1_BUTTON_A,
     ]
 
@@ -38,7 +38,7 @@ class InputDetector:
     ]
 
     Y = [
-        pyxel.KEY_S,
+        pyxel.KEY_A,
         pyxel.GAMEPAD1_BUTTON_Y,
     ]
 
