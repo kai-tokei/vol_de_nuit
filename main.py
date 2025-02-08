@@ -41,10 +41,10 @@ class App:
             self.plane.pitch_down()
         if Input.btn(Input.DOWN):
             self.plane.pitch_up()
-        # if Input.btn(Input.A):
-        #     self.plane.roll_right()
-        # if Input.btn(Input.B):
-        #     self.plane.roll_left()
+        if Input.btn(Input.X):
+            self.plane.speed_up()
+        if Input.btn(Input.B):
+            self.plane.speed_down()
 
         self.plane.update()
 

@@ -23,13 +23,13 @@ class InputDetector:
     ]
 
     A = [
-        pyxel.KEY_S,
+        pyxel.KEY_A,
         pyxel.GAMEPAD1_BUTTON_A,
     ]
 
     B = [
-        pyxel.KEY_A,
-        pyxel.GAMEPAD1_BUTTON_Y,
+        pyxel.KEY_X,
+        pyxel.GAMEPAD1_BUTTON_B,
     ]
 
     X = [
@@ -37,9 +37,9 @@ class InputDetector:
         pyxel.GAMEPAD1_BUTTON_X,
     ]
 
-    X = [
-        pyxel.KEY_X,
-        pyxel.GAMEPAD1_BUTTON_B,
+    Y = [
+        pyxel.KEY_S,
+        pyxel.GAMEPAD1_BUTTON_Y,
     ]
 
     def btn(key: list[int]) -> bool:
