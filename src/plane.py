@@ -73,7 +73,7 @@ class Plane:
             [
                 [1.0, 0.0, 0.0],
                 [0.0, np.cos(pitch), -np.sin(pitch)],
-                [0.0, np.sin(pitch), np.cos(pitch)],  # 符号を修正
+                [0.0, np.sin(pitch), np.cos(pitch)],
             ]
         )
 
@@ -93,7 +93,7 @@ class Plane:
         R_yaw = self._cal_yaw_rot()
         R_pitch = self._cal_pitch_rot()
         R_roll = self._cal_roll_rot()
-        return R_roll @ R_pitch @ R_yaw  # 回転順序は重要です
+        return R_roll @ R_pitch @ R_yaw
 
     def _update_angle(self):
         """角度を調整"""
@@ -101,10 +101,7 @@ class Plane:
         self.pitch += self.pitch_v
         self.roll += self.roll_v
 
-        forward = np.array([0.0, 0.0, 1.0])
-        R = self._cal_rotation_matrix()
-        vec = R @ forward
-        self.pos += vec
+        # 世界座標系での方向を計算
         R_roll = self._cal_roll_rot()
         self.direction = R_roll @ np.array(
             [
@@ -114,9 +111,17 @@ class Plane:
             ]
         )
 
+    def _update_pos(self):
+        """位置座標を計算"""
+        forward = np.array([0.0, 0.0, 1.0])
+        R = self._cal_rotation_matrix()
+        vec = R @ forward
+        self.pos += vec
+
     def update(self):
         self._decrease_params()
         self._update_angle()
+        self._update_pos()
 
     def draw(self, camera: Camera):
         pass
