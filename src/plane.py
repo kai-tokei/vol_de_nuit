@@ -1,14 +1,15 @@
 import pyxel
 import numpy as np
 from src.camera import Camera
+from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 
 class Plane:
-    ROLL_MAX = 45
-    PITCH_MAX = 30
     ROLL_SPEED = 0.2
     PITCH_SPEED = 0.2
     YAW_SPEED = 0.2
+    GROUND_Y = -3  # 地面のy座標
+    GROUND_GAP = 8  # 地面効果を受ける範囲
 
     def __init__(self):
         self.pos = np.array([500.0, -30.0, 0.0])
@@ -22,6 +23,7 @@ class Plane:
         self.roll = 0
         self.roll_v = 0
         self.v = 0
+        self.isGroundEffected = False  # 地面効果を受け取っているか
 
     def yaw_right(self):
         """右旋回"""
@@ -52,47 +54,15 @@ class Plane:
         self.yaw_v *= 0.95
         self.pitch_v *= 0.95
         self.roll_v *= 0.95
-        # self.roll *= 0.999
-        # self.pitch *= 0.999
-
-    def _cal_yaw_rot(self):
-        """yawの回転を計算"""
-        yaw = np.radians(self.yaw)
-        return np.array(
-            [
-                [np.cos(yaw), 0.0, np.sin(yaw)],
-                [0.0, 1.0, 0.0],
-                [-np.sin(yaw), 0.0, np.cos(yaw)],
-            ]
-        )
-
-    def _cal_pitch_rot(self):
-        """pitchの回転を計算"""
-        pitch = np.radians(-self.pitch)  # pitchは通常、負の方向に回転
-        return np.array(
-            [
-                [1.0, 0.0, 0.0],
-                [0.0, np.cos(pitch), -np.sin(pitch)],
-                [0.0, np.sin(pitch), np.cos(pitch)],
-            ]
-        )
-
-    def _cal_roll_rot(self):
-        """rollの回転を計算"""
-        roll = np.radians(self.roll)
-        return np.array(
-            [
-                [np.cos(roll), np.sin(roll), 0.0],
-                [-np.sin(roll), np.cos(roll), 0.0],
-                [0.0, 0.0, 1.0],
-            ]
-        )
+        if self.isGroundEffected:
+            self.roll *= 0.95
+            self.pitch *= 0.95
 
     def _cal_rotation_matrix(self):
         """回転行列を計算"""
-        R_yaw = self._cal_yaw_rot()
-        R_pitch = self._cal_pitch_rot()
-        R_roll = self._cal_roll_rot()
+        R_yaw = cal_yaw_rot(self.yaw)
+        R_pitch = cal_pitch_rot(self.pitch)
+        R_roll = cal_roll_rot(self.roll)
         return R_roll @ R_pitch @ R_yaw
 
     def _update_angle(self):
@@ -102,7 +72,7 @@ class Plane:
         self.roll += self.roll_v
 
         # 世界座標系での方向を計算
-        R_roll = self._cal_roll_rot()
+        R_roll = cal_roll_rot(self.roll)
         self.direction = R_roll @ np.array(
             [
                 self.yaw,

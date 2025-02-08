@@ -26,11 +26,6 @@ class App:
 
     def update(self):
         self.camera.set_pos(self.plane.pos[0], self.plane.pos[1], self.plane.pos[2])
-        # self.camera.set_angle(
-        #     np.radians(self.plane.yaw),
-        #     np.radians(self.plane.pitch),
-        #     np.radians(self.plane.roll),
-        # )
         self.camera.set_angle(
             np.radians(self.plane.direction[0]),
             np.radians(self.plane.direction[1]),
