@@ -23,6 +23,8 @@ class Plane:
         self.yaw_speed = 0.005  # 旋回速度（1回の操作での最大角度変化）
         self.pitch_speed = 0.4  # 旋回速度（1回の操作での最大角度変化）
         self.roll_speed = 0.4  # 回転速度
+        self.islanding = False  # 地上にいるかどうか
+        self.ground_gap = -4  # 地上でのカメラの高さ
 
     def get_crt_direction(self):
         """進行方向を取得"""
@@ -115,13 +117,17 @@ class Plane:
 
     def _attenution(self):
         """減衰処理"""
-        self.yaw_v *= 0.99
-        if self.a > self.a_max / 4:
+        if self.a > self.a_max / 4 or self.islanding:
             self.pitch *= 0.99
         else:
             self.pitch += (self.default_pitch - self.pitch) * 0.001
-        self.v_inertial *= 0.99
         self.roll *= 0.99
+        if self.islanding:
+            self.yaw_v *= 0.95
+            self.v_inertial *= 0.95
+        else:
+            self.yaw_v *= 0.99
+            self.v_inertial *= 0.99
         self.yaw_a = 0.0  # 入力がない場合は角加速度を0に
 
     def update(self):
@@ -138,14 +144,23 @@ class Plane:
 
         direction = self.get_direction(self.yaw, self.pitch, self.roll)
 
+        # 重力
+        gravity = self.gravity * (abs(self.a_max - self.a) / self.a_max)
+
+        # 着陸判定
+        self.islanding = self.pos[1] > self.ground_gap
+        if self.islanding:
+            gravity *= -(self.pos[1])
+            self.a *= 0.999
+
         # 速度の計算
         self.a_inertial = (self.a) * direction
-        self.v_inertial += self.a_inertial + self.gravity * (
-            abs(self.a_max - self.a) / self.a_max
-        )
+        self.v_inertial += self.a_inertial + gravity
 
         # 座標移動
         self.pos += self.v_inertial
+
+        print(self.v_inertial)
 
         # 減衰処理
         self._attenution()
