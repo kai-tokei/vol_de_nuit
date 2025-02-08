@@ -8,7 +8,7 @@ from src.kyes import InputDetector as Input
 
 class App:
     def __init__(self):
-        pyxel.init(160, 120, fps=60)
+        pyxel.init(160, 120, title="Vol de nuit", fps=60)
 
         self.plane = Plane()
         self.camera = Camera(
@@ -26,7 +26,11 @@ class App:
 
     def update(self):
         self.camera.set_pos(self.plane.pos[0], self.plane.pos[1], self.plane.pos[2])
-        self.camera.set_angle(np.radians(self.plane.yaw), np.radians(self.plane.pitch))
+        self.camera.set_angle(
+            np.radians(self.plane.yaw),
+            np.radians(self.plane.pitch),
+            np.radians(self.plane.roll),
+        )
 
         # 機体の向きを操作
         if Input.btn(Input.LEFT):
@@ -37,6 +41,10 @@ class App:
             self.plane.pitch_down()
         if Input.btn(Input.DOWN):
             self.plane.pitch_up()
+        # if Input.btn(Input.A):
+        #     self.plane.roll_right()
+        # if Input.btn(Input.B):
+        #     self.plane.roll_left()
 
         self.plane.update()
 
@@ -47,9 +55,10 @@ class App:
         pyxel.text(0, 0, "camera_pos: " + str(self.camera.camera_pos), 7)
         pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
         pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
-        pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
-        pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
-        pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)
+        pyxel.text(0, 24, "z_angle: " + str(np.rad2deg(self.camera.camera_z_angle)), 7)
+        # pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
+        # pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
+        # pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)
 
     def draw(self):
         pyxel.cls(0)
@@ -67,7 +76,7 @@ class App:
                         pyxel.pset(px, py, (8 if ((x + z) % d == 0) else 7))
 
         self.plane.draw(self.camera)
-        # self.draw_debug()
+        self.draw_debug()
 
 
 App()

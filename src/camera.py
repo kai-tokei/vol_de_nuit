@@ -83,9 +83,11 @@ class Camera:
         """カメラの位置を設定する"""
         self.camera_pos = np.array([x, y, z])
 
-    def set_angle(self, h: float, v: float):
+    def set_angle(self, h: float, v: float, z: float):
+        """カメラの角度を設定する"""
         self.camera_h_angle = h
         self.camera_v_angle = v
+        self.camera_z_angle = z
         self.cal_rotation()
 
     def rotate(self, dh: float, dv: float, dz: float):
