@@ -21,15 +21,20 @@ class Plane:
         self.yaw_v = 0.0  # yaw方向の角速度
         self.max_yaw_v = 0.5  # 最大角速度
         self.yaw_speed = 0.005  # 旋回速度（1回の操作での最大角度変化）
-        self.pitch_speed = 0.5  # 旋回速度（1回の操作での最大角度変化）
+        self.pitch_speed = 0.4  # 旋回速度（1回の操作での最大角度変化）
         self.roll_speed = 0.4  # 回転速度
 
+    def get_crt_direction(self):
+        """進行方向を取得"""
+        return self.get_direction(self.yaw, self.pitch, self.roll)
+
     def get_direction(self, yaw, pitch, roll):
+        """進行方向を計算"""
         yaw_rad = np.radians(yaw)
         pitch_rad = np.radians(pitch)
         roll_rad = np.radians(roll)
 
-        # ヨー（Z軸回転）
+        # ロール（Z軸回転）
         R_roll = np.array(
             [
                 [np.cos(roll_rad), -np.sin(roll_rad), 0],
@@ -47,7 +52,7 @@ class Plane:
             ]
         )
 
-        # ロール（Y軸回転）
+        # ヨー（Y軸回転）
         R_yaw = np.array(
             [
                 [np.cos(yaw_rad), 0, np.sin(yaw_rad)],
