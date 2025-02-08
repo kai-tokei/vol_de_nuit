@@ -11,8 +11,10 @@ class Plane:
     YAW_SPEED = 0.2
 
     def __init__(self):
-        self.pos = np.array([0, -10, 0])
-        self.direction = np.array([0, 0, 0])
+        self.pos = np.array([500.0, -30.0, 0.0])
+        self.vec = np.array([0.0, 0.0, 0.0])
+        self.direction = np.array([0.0, 0.0, 0.0])
+        self.speed = 2.0
         self.yaw = 0
         self.yaw_v = 0
         self.pitch = 0
@@ -50,38 +52,66 @@ class Plane:
         self.yaw_v *= 0.95
         self.pitch_v *= 0.95
         self.roll_v *= 0.95
-        self.roll *= 0.999
-        self.pitch *= 0.999
+        # self.roll *= 0.999
+        # self.pitch *= 0.999
 
-    def cal_angle(self):
+    def _cal_angle(self):
         """角度を計算"""
+
+        yaw = np.radians(self.yaw)
+        pitch = np.radians(-self.pitch)
+        roll = np.radians(self.roll)
+
         R_pitch = np.array(
             [
                 [1.0, 0.0, 0.0],
-                [0.0, np.cos(self.pitch), -np.sin(self.pitch)],
-                [-np.sin(self.pitch), 0, np.cos(self.pitch)],
+                [0.0, np.cos(pitch), -np.sin(pitch)],
+                [-np.sin(pitch), 0, np.cos(pitch)],
             ]
         )
         R_yaw = np.array(
             [
-                [np.cos(self.yaw), 0.0, np.sin(self.yaw)],
+                [np.cos(yaw), 0.0, np.sin(yaw)],
                 [0.0, 1.0, 0.0],
-                [-np.sin(self.yaw), 0.0, np.cos(self.yaw)],
+                [-np.sin(yaw), 0.0, np.cos(yaw)],
             ]
         )
         R_roll = np.array(
             [
-                [np.cos(self.roll), -np.sin(self.roll), 0.0],
-                [np.sin(self.roll), np.cos(self.roll), 0.0],
+                [np.cos(roll), np.sin(roll), 0.0],
+                [-np.sin(roll), np.cos(roll), 0.0],
                 [0.0, 0.0, 1.0],
             ]
         )
+        return R_roll @ R_pitch @ R_yaw
 
     def update_angle(self):
         """角度を調整"""
         self.yaw += self.yaw_v
         self.pitch += self.pitch_v
         self.roll += self.roll_v
+
+        forward = np.array([0.0, 0.0, 1.0])
+        R = self._cal_angle()
+        vec = R @ forward
+        print(vec)
+        self.pos += vec
+        self.vec += vec
+        roll = np.radians(self.roll)
+        R_roll = np.array(
+            [
+                [np.cos(roll), np.sin(roll), 0.0],
+                [-np.sin(roll), np.cos(roll), 0.0],
+                [0.0, 0.0, 1.0],
+            ]
+        )
+        self.direction = R_roll @ np.array(
+            [
+                self.yaw,
+                self.pitch,
+                self.roll,
+            ]
+        )
 
     def update(self):
         self.decrease_params()
