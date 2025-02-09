@@ -5,8 +5,10 @@ from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 
 class Plane:
-    A = 0.01
-    SPEED_MAX = 0.5
+    A = 0.002
+    SPEED_MAX = 0.6
+    SPEED_MIN = 0.1
+    SPEED_GROUND = 0.0
     ROLL_SPEED = 0.3
     PITCH_SPEED = 0.4
     YAW_SPEED = 0.2
@@ -58,7 +60,10 @@ class Plane:
 
     def speed_down(self):
         """速度減少"""
-        self.speed = max(self.speed - self.A, 0.0)
+        if self.isGroundEffected:
+            self.speed = max(self.speed - self.A, self.SPEED_GROUND)
+        else:
+            self.speed = max(self.speed - self.A, 0.3)
 
     def _cal_ground_effect(self):
         """地面効果"""
@@ -70,7 +75,8 @@ class Plane:
         self.pitch_v *= 0.95
         self.roll_v *= 0.95
         if self.isGroundEffected:
-            self.roll *= 0.99
+            self.roll *= 0.95
+            self.speed *= 0.999
             self.pitch += (-0.1 - self.pitch) * 0.04
 
     def _cal_rotation_matrix(self):
@@ -106,7 +112,7 @@ class Plane:
         """位置座標を計算"""
         forward = np.array([0.0, 0.0, 1.0])
         R = self._cal_rotation_matrix()
-        self.vec *= 0.8
+        self.vec *= 0.85
         self.vec += R @ forward
         self.vec *= self.speed
         self.vec += self._cal_gravity()

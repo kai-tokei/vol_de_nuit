@@ -67,8 +67,8 @@ class App:
     def draw(self):
         pyxel.cls(0)
         d = 50
-        for z in range(50):
-            for x in range(50):
+        for z in range(80):
+            for x in range(80):
                 pos = self.camera.cal_pos_on_screen(np.array([x * 50, 0, z * 50]))
                 if pos != None:
                     px, py, pd = pos
