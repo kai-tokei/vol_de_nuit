@@ -56,10 +56,10 @@ class App:
         """
         デバッグ情報を出力
         """
-        pyxel.text(0, 0, "camera_pos: " + str(self.camera.camera_pos), 7)
-        pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
-        pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
-        pyxel.text(0, 24, "z_angle: " + str(np.rad2deg(self.camera.camera_z_angle)), 7)
+        # pyxel.text(0, 0, "camera_pos: " + str(self.camera.camera_pos), 7)
+        # pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
+        # pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
+        # pyxel.text(0, 24, "z_angle: " + str(np.rad2deg(self.camera.camera_z_angle)), 7)
         pyxel.text(0, 32, "level: " + str(self.plane.levelness), 7)
         # pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
         # pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)

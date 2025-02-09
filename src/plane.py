@@ -17,7 +17,7 @@ class Plane:
     GRAVITY = np.array([0.0, 0.98, 0.0])
 
     def __init__(self):
-        self.pos = np.array([500.0, -100.0, 0.0])
+        self.pos = np.array([500.0, -30.0, 0.0])
         self.vec = np.array([0.0, 0.0, 0.0])
         self.direction_angle = np.array([0.0, 0.0, 0.0])
         self.direction_vec = np.array([0.0, 0.0, 0.0])
@@ -31,6 +31,7 @@ class Plane:
         self.v = 0
         self.levelness = 0
         self.isGroundEffected = False  # 地面効果を受け取っているか
+        self.isCrashed = False  # 地面を突き抜けていないか
 
     def yaw_right(self):
         """右旋回"""
@@ -107,6 +108,20 @@ class Plane:
         theta = np.arccos(vy / norm)
         return np.degrees(theta) % 180
 
+    def _check_is_crashed(self):
+        """クラッシュしていないか(地面を突き抜けていないか)確認"""
+        self.isCrashed = self.pos[1] > 0
+
+    def _chrashed(self):
+        """地面にめり込んでいたらリセット"""
+        if self.isCrashed:
+            self.pos = np.array([500.0, -30.0, 0.0])
+            self.vec = np.array([0.0, 0.0, 0.0])
+            self.speed = 0.0
+            self.yaw = 0.0
+            self.pitch = 0.0
+            self.roll = 0.0
+
     def _update_camera_angle(self):
         """カメラ角度を調整"""
         # 世界座標系での方向を計算
@@ -144,6 +159,8 @@ class Plane:
         self._update_camera_angle()
         self._update_pos()
         self._cal_ground_effect()
+        self._check_is_crashed()
+        self._chrashed()
         self.levelness = self._cal_angle_with_xz_plane(self.direction_vec)
 
     def draw(self, camera: Camera):
