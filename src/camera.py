@@ -21,7 +21,7 @@ class Camera:
         self.screen_w: int = screen_w
         self.screen_h: int = screen_h
         self.z_prime_handler: int = 4
-        self.draw_limit: int = 500
+        self.draw_limit: int = 600
         self.rotate(0, 0, 0)
 
     def cal_pos_on_screen(self, pos: np.array) -> tuple[int, int, int] | None:

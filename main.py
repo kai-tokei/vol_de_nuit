@@ -45,10 +45,10 @@ class App:
             self.plane.yaw_left()
         if Input.btn(Input.A):
             self.plane.yaw_right()
-        # if Input.btn(Input.X):
-        #     self.plane.speed_up()
-        # if Input.btn(Input.B):
-        #     self.plane.speed_down()
+        if Input.btn(Input.X):
+            self.plane.speed_up()
+        if Input.btn(Input.B):
+            self.plane.speed_down()
 
         self.plane.update()
 

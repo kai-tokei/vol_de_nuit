@@ -5,17 +5,20 @@ from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 
 class Plane:
+    A = 0.01
+    SPEED_MAX = 0.5
     ROLL_SPEED = 0.3
     PITCH_SPEED = 0.4
     YAW_SPEED = 0.2
     GROUND_Y = -3  # 地面のy座標
     GROUND_GAP = 20  # 地面効果を受ける範囲
+    GRAVITY = np.array([0.0, 0.98, 0.0])
 
     def __init__(self):
         self.pos = np.array([500.0, -100.0, 0.0])
         self.vec = np.array([0.0, 0.0, 0.0])
         self.direction = np.array([0.0, 0.0, 0.0])
-        self.speed = 0.5
+        self.speed = 0.0
         self.yaw = 0
         self.yaw_v = 0
         self.pitch = 0
@@ -49,6 +52,14 @@ class Plane:
         """左回転"""
         self.roll_v = self.ROLL_SPEED
 
+    def speed_up(self):
+        """速度上昇"""
+        self.speed = min(self.speed + self.A, self.SPEED_MAX)
+
+    def speed_down(self):
+        """速度減少"""
+        self.speed = max(self.speed - self.A, 0.0)
+
     def _cal_ground_effect(self):
         """地面効果"""
         self.isGroundEffected = self.pos[1] > self.GROUND_Y - self.GROUND_GAP
@@ -69,6 +80,13 @@ class Plane:
         R_roll = cal_roll_rot(self.roll)
         return R_roll @ R_pitch @ R_yaw
 
+    def _cal_gravity(self):
+        """重力を計算"""
+        if self.isGroundEffected:
+            return 0.0
+        ratio = ((self.SPEED_MAX - self.speed) / self.SPEED_MAX) * self.GRAVITY
+        return ratio * self.GRAVITY
+
     def _update_angle(self):
         """角度を調整"""
         self.yaw += self.yaw_v
@@ -88,8 +106,11 @@ class Plane:
         """位置座標を計算"""
         forward = np.array([0.0, 0.0, 1.0])
         R = self._cal_rotation_matrix()
-        vec = R @ forward
-        self.pos += vec * self.speed
+        self.vec *= 0.8
+        self.vec += R @ forward
+        self.vec *= self.speed
+        self.vec += self._cal_gravity()
+        self.pos += self.vec
 
     def update(self):
         self._decrease_params()
