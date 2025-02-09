@@ -27,9 +27,9 @@ class App:
     def update(self):
         self.camera.set_pos(self.plane.pos[0], self.plane.pos[1], self.plane.pos[2])
         self.camera.set_angle(
-            np.radians(self.plane.direction[0]),
-            np.radians(self.plane.direction[1]),
-            np.radians(self.plane.direction[2]),
+            np.radians(self.plane.direction_angle[0]),
+            np.radians(self.plane.direction_angle[1]),
+            np.radians(self.plane.direction_angle[2]),
         )
 
         # 機体の向きを操作
@@ -60,6 +60,7 @@ class App:
         pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
         pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
         pyxel.text(0, 24, "z_angle: " + str(np.rad2deg(self.camera.camera_z_angle)), 7)
+        pyxel.text(0, 32, "level: " + str(self.plane.levelness), 7)
         # pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
         # pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
         # pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)

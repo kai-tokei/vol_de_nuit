@@ -19,7 +19,8 @@ class Plane:
     def __init__(self):
         self.pos = np.array([500.0, -100.0, 0.0])
         self.vec = np.array([0.0, 0.0, 0.0])
-        self.direction = np.array([0.0, 0.0, 0.0])
+        self.direction_angle = np.array([0.0, 0.0, 0.0])
+        self.direction_vec = np.array([0.0, 0.0, 0.0])
         self.speed = 0.0
         self.yaw = 0
         self.yaw_v = 0
@@ -28,6 +29,7 @@ class Plane:
         self.roll = 0
         self.roll_v = 0
         self.v = 0
+        self.levelness = 0
         self.isGroundEffected = False  # 地面効果を受け取っているか
 
     def yaw_right(self):
@@ -67,7 +69,10 @@ class Plane:
 
     def _cal_ground_effect(self):
         """地面効果"""
-        self.isGroundEffected = self.pos[1] > self.GROUND_Y - self.GROUND_GAP
+        theta = self._cal_angle_with_xz_plane(self.direction_vec)
+        self.isGroundEffected = True
+        self.isGroundEffected = 70 < theta < 110
+        self.isGroundEffected &= self.pos[1] > self.GROUND_Y - self.GROUND_GAP
 
     def _decrease_params(self):
         """減衰処理"""
@@ -93,31 +98,35 @@ class Plane:
         ratio = ((self.SPEED_MAX - self.speed) / self.SPEED_MAX) * self.GRAVITY
         return ratio * self.GRAVITY
 
-    def _cal_angle_with_xz_plane(self):
+    def _cal_angle_with_xz_plane(self, vec):
         """za平面とのなす角を計算する"""
-        vx, vy, vz = self.vec
-        norm_vec = np.linalg.norm(self.vec)
-        if norm_vec == 0:
-            """ゼロベクトルなら、角度は0"""
-            return 0.0
-        theta_rad = np.arcsin(abs(vy) / norm_vec)
-        theta_deg = np.degrees(theta_rad)
-        return theta_deg
+        vx, vy, vz = vec
+        norm = np.linalg.norm(vec)
+        if vy == 0:
+            return 90.0
+        theta = np.arccos(vy / norm)
+        return np.degrees(theta) % 180
 
-    def _update_angle(self):
-        """角度を調整"""
-        self.yaw += self.yaw_v
-        self.pitch += self.pitch_v
-        self.roll += self.roll_v
+    def _update_camera_angle(self):
+        """カメラ角度を調整"""
         # 世界座標系での方向を計算
+        forward = np.array([0.0, 0.0, 1.0])
+        R = self._cal_rotation_matrix()
+        self.direction_vec = R @ forward
         R_roll = cal_roll_rot(self.roll)
-        self.direction = R_roll @ np.array(
+        self.direction_angle = R_roll @ np.array(
             [
                 self.yaw,
                 self.pitch,
                 self.roll,
             ]
         )
+
+    def _update_angle(self):
+        """角度を調整"""
+        self.yaw += self.yaw_v
+        self.pitch += self.pitch_v
+        self.roll += self.roll_v
 
     def _update_pos(self):
         """位置座標を計算"""
@@ -132,9 +141,10 @@ class Plane:
     def update(self):
         self._decrease_params()
         self._update_angle()
+        self._update_camera_angle()
         self._update_pos()
         self._cal_ground_effect()
-        print(self._cal_angle_with_xz_plane())
+        self.levelness = self._cal_angle_with_xz_plane(self.direction_vec)
 
     def draw(self, camera: Camera):
         pass
