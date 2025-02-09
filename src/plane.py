@@ -93,6 +93,17 @@ class Plane:
         ratio = ((self.SPEED_MAX - self.speed) / self.SPEED_MAX) * self.GRAVITY
         return ratio * self.GRAVITY
 
+    def _cal_angle_with_xz_plane(self):
+        """za平面とのなす角を計算する"""
+        vx, vy, vz = self.vec
+        norm_vec = np.linalg.norm(self.vec)
+        if norm_vec == 0:
+            """ゼロベクトルなら、角度は0"""
+            return 0.0
+        theta_rad = np.arcsin(abs(vy) / norm_vec)
+        theta_deg = np.degrees(theta_rad)
+        return theta_deg
+
     def _update_angle(self):
         """角度を調整"""
         self.yaw += self.yaw_v
@@ -123,6 +134,7 @@ class Plane:
         self._update_angle()
         self._update_pos()
         self._cal_ground_effect()
+        print(self._cal_angle_with_xz_plane())
 
     def draw(self, camera: Camera):
         pass
