@@ -5,17 +5,17 @@ from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 
 class Plane:
-    ROLL_SPEED = 0.2
-    PITCH_SPEED = 0.2
+    ROLL_SPEED = 0.3
+    PITCH_SPEED = 0.4
     YAW_SPEED = 0.2
     GROUND_Y = -3  # 地面のy座標
-    GROUND_GAP = 8  # 地面効果を受ける範囲
+    GROUND_GAP = 20  # 地面効果を受ける範囲
 
     def __init__(self):
-        self.pos = np.array([500.0, -30.0, 0.0])
+        self.pos = np.array([500.0, -100.0, 0.0])
         self.vec = np.array([0.0, 0.0, 0.0])
         self.direction = np.array([0.0, 0.0, 0.0])
-        self.speed = 2.0
+        self.speed = 0.5
         self.yaw = 0
         self.yaw_v = 0
         self.pitch = 0
@@ -49,14 +49,18 @@ class Plane:
         """左回転"""
         self.roll_v = self.ROLL_SPEED
 
+    def _cal_ground_effect(self):
+        """地面効果"""
+        self.isGroundEffected = self.pos[1] > self.GROUND_Y - self.GROUND_GAP
+
     def _decrease_params(self):
         """減衰処理"""
         self.yaw_v *= 0.95
         self.pitch_v *= 0.95
         self.roll_v *= 0.95
         if self.isGroundEffected:
-            self.roll *= 0.95
-            self.pitch *= 0.95
+            self.roll *= 0.99
+            self.pitch += (-0.1 - self.pitch) * 0.04
 
     def _cal_rotation_matrix(self):
         """回転行列を計算"""
@@ -70,7 +74,6 @@ class Plane:
         self.yaw += self.yaw_v
         self.pitch += self.pitch_v
         self.roll += self.roll_v
-
         # 世界座標系での方向を計算
         R_roll = cal_roll_rot(self.roll)
         self.direction = R_roll @ np.array(
@@ -86,12 +89,13 @@ class Plane:
         forward = np.array([0.0, 0.0, 1.0])
         R = self._cal_rotation_matrix()
         vec = R @ forward
-        self.pos += vec
+        self.pos += vec * self.speed
 
     def update(self):
         self._decrease_params()
         self._update_angle()
         self._update_pos()
+        self._cal_ground_effect()
 
     def draw(self, camera: Camera):
         pass
