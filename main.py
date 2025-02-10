@@ -82,6 +82,7 @@ class App:
 
         self.plane.draw(self.camera)
         self.draw_debug()
+        pyxel.rect(10, 80, 20, 20, 7)
 
 
 App()
