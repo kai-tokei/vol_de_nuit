@@ -4,6 +4,40 @@ import numpy as np
 from src.camera import Camera
 from src.plane import Plane
 from src.kyes import InputDetector as Input
+from src.animation import Animation
+from src.frame import Frame
+
+
+class SpeedMeter:
+    def __init__(self):
+        self.x = 35
+        self.y = 98
+        self.anime = Animation("assets/images/speed_meter-Sheet.png", 20, 20)
+        self.anime.add(label="normal", frame=Frame(1, [0]))
+        self.anime.set("normal")
+        self.anime.play(loop=False)
+        self.img = pyxel.Image(20, 20)
+
+        self.ratio = 0
+
+    def set_ratio(self, ratio):
+        """割合を設定"""
+        self.ratio = ratio
+
+    def update(self):
+        self.anime.update()
+
+    def draw(self):
+        self.img.cls(0)
+        for i in range(100):
+            w = 95
+            x = (-w * self.ratio) + 10 + i * 4
+            y = 12
+            h = 3
+            self.img.text(x - 1, y - 6, str(i * 2 if i % 4 == 0 else ""), 3)
+            self.img.line(x, y, x, y + h, 3)
+        pyxel.blt(self.x, self.y, self.img, 0, 0, 20, 20)
+        self.anime.draw(self.x, self.y, colKey=4)
 
 
 class App:
@@ -20,7 +54,15 @@ class App:
             screen_w=160,
             screen_h=120,
         )
-        self.move_velo = 0.1
+
+        # コックピット
+        self.cockpit = Animation("assets/images/cockpit.png", 160, 120)
+        self.cockpit.add(label="normal", frame=Frame(1, [0]))
+        self.cockpit.set("normal")
+        self.cockpit.play(loop=False)
+
+        # スピードメータ
+        self.speed_meter = SpeedMeter()
 
         pyxel.run(self.update, self.draw)
 
@@ -52,6 +94,11 @@ class App:
 
         self.plane.update()
 
+        self.speed_meter.update()
+        self.speed_meter.set_ratio(self.plane.vec[2] / self.plane.SPEED_MAX)
+
+        self.cockpit.update()
+
     def draw_debug(self):
         """
         デバッグ情報を出力
@@ -60,7 +107,7 @@ class App:
         # pyxel.text(0, 8, "h_angle: " + str(np.rad2deg(self.camera.camera_h_angle)), 7)
         # pyxel.text(0, 16, "w_angle: " + str(np.rad2deg(self.camera.camera_v_angle)), 7)
         # pyxel.text(0, 24, "z_angle: " + str(np.rad2deg(self.camera.camera_z_angle)), 7)
-        pyxel.text(0, 32, "level: " + str(self.plane.levelness), 7)
+        # pyxel.text(0, 32, "level: " + str(self.plane.levelness), 7)
         # pyxel.text(0, 24, "z_prime: " + str(self.camera.z_prime_handler), 7)
         # pyxel.text(0, 32, "plane yaw: " + str(self.plane.yaw), 7)
         # pyxel.text(0, 40, "plane pitch: " + str(self.plane.pitch), 7)
@@ -82,7 +129,8 @@ class App:
 
         self.plane.draw(self.camera)
         self.draw_debug()
-        pyxel.rect(10, 80, 20, 20, 7)
+        self.cockpit.draw(0, 5, colKey=4)
+        self.speed_meter.draw()
 
 
 App()
