@@ -35,9 +35,45 @@ class SpeedMeter:
             y = 12
             h = 3
             self.img.text(x - 1, y - 6, str(i * 2 if i % 4 == 0 else ""), 3)
-            self.img.line(x, y, x, y + h, 3)
+            if i % 4 == 0:
+                self.img.line(x, y + h, x, y, 3)
+            else:
+                self.img.line(x, y + h, x, y + h / 2, 3)
         pyxel.blt(self.x, self.y, self.img, 0, 0, 20, 20)
         self.anime.draw(self.x, self.y, colKey=4)
+
+
+class Altimeter:
+    def __init__(self):
+        self.x = 105
+        self.y = 98
+        self.anime = Animation("assets/images/altimeter.png", 20, 20)
+        self.anime.add(label="normal", frame=Frame(1, [0]))
+        self.anime.set("normal")
+        self.anime.play(loop=False)
+        self.img = pyxel.Image(20, 20)
+        self.ratio = 0
+
+    def set_ratio(self, ratio):
+        """割合を設定"""
+        self.ratio = ratio
+
+    def update(self):
+        self.anime.update()
+
+    def draw(self):
+        r = 7
+        rad = -self.ratio * 2 * np.pi
+        self.anime.draw(self.x, self.y, colKey=4)
+        self.img.cls(0)
+        self.img.line(
+            10,
+            10,
+            10 + r * np.cos(rad),
+            10 + r * np.sin(rad),
+            3,
+        )
+        pyxel.blt(self.x, self.y, self.img, 0, 0, 20, 20, colkey=0)
 
 
 class App:
@@ -61,8 +97,9 @@ class App:
         self.cockpit.set("normal")
         self.cockpit.play(loop=False)
 
-        # スピードメータ
+        # 計器類
         self.speed_meter = SpeedMeter()
+        self.altimeter = Altimeter()
 
         pyxel.run(self.update, self.draw)
 
@@ -95,7 +132,9 @@ class App:
         self.plane.update()
 
         self.speed_meter.update()
+        self.altimeter.update()
         self.speed_meter.set_ratio(self.plane.vec[2] / self.plane.SPEED_MAX)
+        self.altimeter.set_ratio(max(self.plane.pos[1], -500) / (-500))
 
         self.cockpit.update()
 
@@ -129,8 +168,10 @@ class App:
 
         self.plane.draw(self.camera)
         self.draw_debug()
+
         self.cockpit.draw(0, 5, colKey=4)
         self.speed_meter.draw()
+        self.altimeter.draw()
 
 
 App()
