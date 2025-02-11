@@ -1,7 +1,7 @@
 import pyxel
 import numpy as np
-from animation import Animation
-from frame import Frame
+from .animation import Animation
+from .frame import Frame
 
 
 class Altimeter:
