@@ -8,30 +8,44 @@ from src.animation import Animation
 from src.frame import Frame
 from src.altimeter import Altimeter
 from src.speed_meter import SpeedMeter
+from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 
 class AttitudeIndicator:
     def __init__(self):
-        self.x = 68
-        self.y = 93
-        self.anime = Animation("assets/images/attitude_indicator.png", 24, 24)
+        self.x = 66
+        self.y = 91
+        self.anime = Animation("assets/images/attitude_indicator.png", 28, 28)
         self.anime.add(label="normal", frame=Frame(1, [0]))
         self.anime.set("normal")
         self.anime.play(loop=False)
-        self.img = pyxel.Image(32, 32)
+        self.horizon = pyxel.Image.from_image("assets/images/horizon.png")
+        self.img = pyxel.Image(64, 64)
 
-        self.ratio = 0
+        self.pitch_ratio = 0
+        self.roll_ratio = 0
 
-    def set_ratio(self, ratio):
+    def set_ratio(self, pitch_ratio, roll_ratio):
         """割合を設定"""
-        self.ratio = ratio
+        self.pitch_ratio = pitch_ratio
+        self.roll_ratio = roll_ratio
 
     def update(self):
         self.anime.update()
 
     def draw(self):
         self.img.cls(0)
-        pyxel.blt(self.x, self.y, self.img, 0, 0, 24, 24)
+        self.img.blt(
+            0,
+            0,
+            self.horizon,
+            0,
+            self.pitch_ratio * 0.5,
+            64,
+            64,
+            rotate=self.roll_ratio,
+        )
+        pyxel.blt(self.x, self.y, self.img, 20, 20, 22, 24)
         self.anime.draw(self.x, self.y, colKey=4)
 
 
@@ -99,6 +113,9 @@ class App:
             np.linalg.norm(self.plane.vec) / self.plane.SPEED_MAX
         )
         self.altimeter.set_ratio(max(self.plane.pos[1], -500) / (-500))
+        self.attitude_indicator.set_ratio(
+            np.rad2deg(self.plane.pitch) / 90, np.rad2deg(self.plane.roll) / 90
+        )
 
         self.cockpit.update()
 
