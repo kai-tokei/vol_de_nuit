@@ -24,7 +24,7 @@ class Camera:
         self.draw_limit: int = 850
         self.rotate(0, 0, 0)
 
-    def cal_pos_on_screen(self, pos: np.array) -> tuple[int, int, int] | None:
+    def cal_pos_on_screen(self, pos: np.array):
         """
         三次元の世界座標をカメラ視点のスクリーン座標に変換する。
         """
