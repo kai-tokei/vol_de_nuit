@@ -15,7 +15,7 @@ from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 class App:
     def __init__(self):
         pyxel.init(160, 120, title="Vol de nuit", fps=60)
-        # pyxel.screen_mode(2)
+        pyxel.screen_mode(2)
 
         self.plane = Plane()
         self.camera = Camera(
@@ -99,8 +99,8 @@ class App:
     def draw(self):
         pyxel.cls(0)
         d = 50
-        for z in range(80):
-            for x in range(80):
+        for z in range(150):
+            for x in range(150):
                 pos = self.camera.cal_pos_on_screen(np.array([x * 50, 0, z * 50]))
                 if pos != None:
                     px, py, pd = pos

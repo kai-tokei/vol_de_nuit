@@ -105,3 +105,4 @@ class Camera:
         self._sin_v = np.sin(self.camera_v_angle)
         self._cos_z = np.cos(self.camera_z_angle)
         self._sin_z = np.sin(self.camera_z_angle)
+

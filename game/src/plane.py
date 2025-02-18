@@ -6,7 +6,7 @@ from src.utils import cal_pitch_rot, cal_roll_rot, cal_yaw_rot
 
 class Plane:
     A = 0.001
-    SPEED_MAX = 0.6
+    SPEED_MAX = 0.8
     SPEED_MIN = 0.1
     SPEED_GROUND = 0.0
     ROLL_SPEED = 0.3
